@@ -78,5 +78,7 @@ def sendline(s, buf):
 def interact(s):
     t = Telnet()
     t.sock = s
-    t.interact()
-    disconnect(s)
+    try:
+        t.interact()
+    finally:
+        disconnect(s)
