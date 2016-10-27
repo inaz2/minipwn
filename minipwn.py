@@ -1,3 +1,4 @@
+import sys
 import os
 import re
 import struct
@@ -23,6 +24,17 @@ def u32(x):
 
 def u64(x):
     return struct.unpack('<Q', x)[0]
+
+def pc(size=20280):
+    s = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '0123456789')
+    pattern = ''.join(x+y+z for x in s[0] for y in s[1] for z in s[2])
+    return pattern[:size]
+
+def po(x):
+    if x.startswith('0x'):
+        x = int(x, 16)
+        x = p32(x) if x < (1<<32) else p64(x)
+    return pc().index(x)
 
 def connect_process(args):
     def run_server(s, e, args):
@@ -82,3 +94,17 @@ def interact(s):
         t.interact()
     finally:
         disconnect(s)
+
+
+if __name__ == '__main__':
+    try:
+        subcommand = sys.argv[1]
+        if subcommand == 'pc':
+            size = int(sys.argv[2])
+            print pc(size)
+        elif subcommand == 'po':
+            value = sys.argv[2]
+            print po(value)
+    except IndexError:
+        print "Usage: python %s (pc SIZE | po VALUE)" % sys.argv[0]
+        sys.exit(1)
