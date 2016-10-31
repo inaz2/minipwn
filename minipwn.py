@@ -106,5 +106,5 @@ if __name__ == '__main__':
             value = sys.argv[2]
             print po(value)
     except IndexError:
-        print "Usage: python %s (pc SIZE | po VALUE)" % sys.argv[0]
+        print >>sys.stderr, "Usage: python %s (pc SIZE | po VALUE)" % sys.argv[0]
         sys.exit(1)
