@@ -1,6 +1,7 @@
 from minipwn import *
 
-s = connect_process(['/bin/sh'])
-sendline(s, 'id')
-print "%r" % recvline(s)
-disconnect(s)
+s = connect_process(['/bin/pwd'])
+#s = socket.create_connection(('localhost', 4444))
+
+data = recvline(s)
+print "%r" % data
