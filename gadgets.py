@@ -60,6 +60,8 @@ def print_gadgets(fpath):
         ('pop_rbx', '\x5b\xc3'),
         ('pop_rcx', '\x59\xc3'),
         ('pop_rdx', '\x5a\xc3'),
+        ('pop_rcx_rbx', '\x59\x5b\xc3'),
+        ('pop_rcx_rdx', '\x59\x5a\xc3'),
         ('pop_rdi', '\x5f\xc3'),
         ('pop_rsi', '\x5e\xc3'),
         ('int80', '\xcd\x80'),
