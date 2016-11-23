@@ -36,6 +36,9 @@ def po(x):
         x = p32(x) if x < (1<<32) else p64(x)
     return pc().index(x)
 
+def xor(x, y):
+    return ''.join(chr(ord(a) ^ ord(b)) for a, b in zip(x, y))
+
 def connect_process(args):
     def run_server(s, e, args):
         c, addr = s.accept()
