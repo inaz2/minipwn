@@ -5,3 +5,5 @@ s = connect_process(['/bin/pwd'])
 
 data = recvline(s)
 print "%r" % data
+
+interact(s)
