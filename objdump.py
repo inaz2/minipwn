@@ -70,8 +70,14 @@ def objdump(fpath):
             addr = int(m.group(0), 16)
             if addr in strings:
                 annotations.append(repr(strings[addr]))
+        for m in re.finditer(r'^\s+([\da-f]{3,}):.+?j\w{,2}\s+([\da-f]{3,})', line):
+            loc = int(m.group(1), 16)
+            addr = int(m.group(2), 16)
+            if addr < loc:
+                annotations.append('backward jump')
+
         if annotations:
-            print line + "\t ; " + ' '.join(annotations)
+            print line.ljust(70) + '  ; ' + ', '.join(annotations)
         else:
             print line
 
