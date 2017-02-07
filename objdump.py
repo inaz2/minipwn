@@ -70,6 +70,13 @@ def objdump(fpath):
             addr = int(m.group(0), 16)
             if addr in strings:
                 annotations.append(repr(strings[addr]))
+        for m in re.finditer(r',0x([\da-f]{4,})', line):
+            hexstr = m.group(1)
+            if len(hexstr) % 2 != 0:
+                continue
+            s = hexstr.decode('hex')[::-1]
+            if re.search(r'^[\n\x20-\x7e]+$', s):
+                annotations.append(repr(s))
         for m in re.finditer(r'^\s+([\da-f]{3,}):.+?j\w{,2}\s+([\da-f]{3,})', line):
             loc = int(m.group(1), 16)
             addr = int(m.group(2), 16)
