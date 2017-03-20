@@ -39,6 +39,24 @@ def po(x):
 def xor(x, y):
     return ''.join(chr(ord(a) ^ ord(b)) for a, b in zip(x, y))
 
+def proof_of_work(algorithm, s, prefix):
+    import hashlib
+    from itertools import product
+
+    def builder(prefix):
+        characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+        n = 64 - len(prefix)
+        for x in product(characters, repeat=n):
+            yield prefix + ''.join(x)
+
+    h = hashlib.new(algorithm)
+    for x in builder(prefix):
+        h2 = h.copy()
+        h2.update(x)
+        digest = h2.hexdigest()
+        if digest.startswith(s):
+            return x
+
 def connect_process(args):
     def run_server(s, e, args):
         c, addr = s.accept()
