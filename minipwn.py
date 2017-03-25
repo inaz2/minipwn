@@ -39,13 +39,14 @@ def po(x):
 def xor(x, y):
     return ''.join(chr(ord(a) ^ ord(b)) for a, b in zip(x, y))
 
-def proof_of_work(algorithm, s, prefix):
+def proof_of_work(algorithm, hexdigest_prefix, prefix, length=64, badchars='\x0a'):
     import hashlib
     from itertools import product
 
     def builder(prefix):
-        characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-        n = 64 - len(prefix)
+        badpoints = map(ord, badchars)
+        characters = [chr(i) for i in xrange(256) if i not in badpoints]
+        n = length - len(prefix)
         for x in product(characters, repeat=n):
             yield prefix + ''.join(x)
 
@@ -54,7 +55,7 @@ def proof_of_work(algorithm, s, prefix):
         h2 = h.copy()
         h2.update(x)
         digest = h2.hexdigest()
-        if digest.startswith(s):
+        if digest.startswith(hexdigest_prefix):
             return x
 
 def connect_process(args):
