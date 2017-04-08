@@ -22,7 +22,7 @@ def load_strings(fpath):
             p_type, p_offset, p_vaddr, p_filesz = elf32_phdr[0], elf32_phdr[1], elf32_phdr[2], elf32_phdr[4]
             if p_type == 1:
                 tmp = data[p_offset:p_offset+p_filesz]
-                for m in re.finditer(r'([\s\x21-\x7e]{4,})\x00', tmp):
+                for m in re.finditer(r'([\s\x21-\x7e]{2,})\x00', tmp):
                     strings[p_vaddr+m.start()] = m.group(1)
     elif ei_class == 2:
         tmp = data[:0x40]
@@ -34,7 +34,7 @@ def load_strings(fpath):
             p_type, p_offset, p_vaddr, p_filesz = elf64_phdr[0], elf64_phdr[2], elf64_phdr[3], elf64_phdr[5]
             if p_type == 1:
                 tmp = data[p_offset:p_offset+p_filesz]
-                for m in re.finditer(r'([\s\x21-\x7e]{4,})\x00', tmp):
+                for m in re.finditer(r'([\s\x21-\x7e]{2,})\x00', tmp):
                     strings[p_vaddr+m.start()] = m.group(1)
     else:
         raise Exception("unsupported ELF class")
@@ -66,7 +66,7 @@ def objdump(fpath):
                 print "loc_%x:" % addr
 
         annotations = []
-        for m in re.finditer(r'[\da-f]{3,}', line):
+        for m in re.finditer(r'0x[\da-f]{3,}', line):
             addr = int(m.group(0), 16)
             if addr in strings:
                 annotations.append(repr(strings[addr]))
