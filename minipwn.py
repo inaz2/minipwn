@@ -99,9 +99,11 @@ def recvuntil(s, term):
 
 def expect(s, term):
     buf = ''
-    while not re.search(term, buf):
+    m = None
+    while not m:
         buf += s.recv(1)
-    return buf
+        m = re.search(term, buf)
+    return m
 
 def recvline(s):
     return recvuntil(s, '\n')
