@@ -88,6 +88,11 @@ def connect_process(args):
 
     return c
 
+def connect_gdb(args, bp_location='exit'):
+    s = connect_process(['gdb', '-q', '-ex', 'b ' + bp_location, '-ex', 'run', '--args'] + args)
+    expect(s, r'Starting program: [^\n]+\n')
+    return s
+
 def disconnect(s):
     s.shutdown(socket.SHUT_WR)
 
