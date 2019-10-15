@@ -4,6 +4,8 @@ some scripts for exploitation
 
 ## Files
 
+all python scripts work with Python 3.6.
+
 * minipwn.py: main library (usage: example.py)
 * objdump.py: objdump with annotations
 * patchgot.py: patch a GOT entry (e.g. alarm) to ret instruction

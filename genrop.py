@@ -211,4 +211,4 @@ if __name__ == '__main__':
 
     genrop = GenROP(fpath)
     genrop.analyze()
-    print(genrop.generate())
+    print(genrop.generate(), end='')
